@@ -4,7 +4,7 @@
 #include<fcntl.h>
 #include<sys/ioctl.h>
 #include <unistd.h>
-#include "ioc_hw5.h"
+#include "test_h.h"
 
 struct dataIn {
     char a;
