@@ -39,26 +39,31 @@ struct DataIn {
 } *dataIn;
 
 // Input and output data from/to DMA
-void myoutc(unsigned char data,unsigned short int port) {
+void myoutc(unsigned char data, unsigned short int port) {
   *(volatile unsigned char*)(dma_buf+port) = data;
 }
-void myouts(unsigned short data,unsigned short int port) {
+
+void myouts(unsigned short data, unsigned short int port) {
   *(volatile unsigned short*)(dma_buf+port) = data;
 }
-void myouti(unsigned int data,unsigned short int port) {
+
+void myouti(unsigned int data, unsigned short int port) {
   *(volatile unsigned int*)(dma_buf+port) = data;
 }
+
 unsigned char myinc(unsigned short int port) {
   return *(volatile unsigned char*)(dma_buf+port);
 }
+
 unsigned short myins(unsigned short int port) {
   return *(volatile unsigned short*)(dma_buf+port);
 }
+
 unsigned int myini(unsigned short int port) {
   return *(volatile unsigned int*)(dma_buf+port);
 }
 
-
+// Driver implementation of file_operations 
 static int drv_open(struct inode* ii, struct file* ff) {
 	try_module_get(THIS_MODULE);
 
@@ -88,10 +93,12 @@ static long drv_ioctl(struct file *filp, unsigned int cmd, unsigned long arg) {
 	return 0;
 }
 
+// Standard arithmetic routine
 static void drv_arithmetic_routine(struct work_struct* ws) {
 	/* Implement arthemetic routine */
 }
 
+// Init and exit modules
 static int __init init_modules(void) {
   
 	printk("%s:%s():...............Start...............\n", PREFIX_TITLE, __func__);
