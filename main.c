@@ -123,7 +123,7 @@ static int __init init_modules(void) {
 
   ret = cdev_add(&prime_dev, dev_no, 1);
   if (ret != 0) {
-    printk(KERN_INFO "Unable to add Cdev\n");
+    printk(KERN_INFO "Unable to add primeDev\n");
     return ret;
   }
   printk(KERN_INFO "Added primeDev\n");
