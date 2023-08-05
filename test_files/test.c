@@ -116,7 +116,7 @@ int main(void) {
   printf("...............Start...............\n");
 
   //open my char device:
-  int fd = open("/dev/mydev", O_RDWR);
+  int fd = open("/dev/primeDev", O_RDWR);
   if(fd == -1) {
     printf("can't open device!\n");
     return -1;

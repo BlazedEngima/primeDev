@@ -1,7 +1,7 @@
 #ifndef DRIVER_H
 #define DRIVER_H
 
-#define PREFIX_TITLE "primeDev
+#define PREFIX_TITLE "primeDev"
 
 #define HW5_IOC_MAGIC         'k'
 #define HW5_IOCSETSTUID       _IOW(HW5_IOC_MAGIC, 1, int)

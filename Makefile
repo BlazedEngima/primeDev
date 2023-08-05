@@ -1,4 +1,4 @@
-mname := mydev
+mname := primeDev
 $(mname)-objs := main.o
 obj-m := $(mname).o
 

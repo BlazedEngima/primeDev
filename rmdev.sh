@@ -1,3 +1,3 @@
 #!/bin/bash
-rm /dev/mydev
-ls -l /dev/mydev
+ls -l /dev/primeDev
+rm /dev/primeDev
