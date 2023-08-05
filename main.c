@@ -17,15 +17,21 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("BlazedEngima");
 
 void *dma_buf;
+dev_t dev_no;
 
 // cdev file_operations
 static struct file_operations fops = {
-  .owner: THIS_MODULE,
-  .read: drv_read,
-  .write: drv_write,
-  .unlocked_ioctl: drv_ioctl,
-  .open: drv_open,
-  .release: drv_release,
+  .owner = THIS_MODULE,
+  .read = drv_read,
+  .write = drv_write,
+  .unlocked_ioctl = drv_ioctl,
+  .open = drv_open,
+  .release = drv_release,
+};
+
+// cdev variable
+static struct cdev prime_dev = {
+  .owner = THIS_MODULE,
 };
 
 // Work routine
@@ -40,27 +46,27 @@ struct DataIn {
 
 // Input and output data from/to DMA
 void myoutc(unsigned char data, unsigned short int port) {
-  *(volatile unsigned char*)(dma_buf+port) = data;
+  *(volatile unsigned char*)(dma_buf + port) = data;
 }
 
 void myouts(unsigned short data, unsigned short int port) {
-  *(volatile unsigned short*)(dma_buf+port) = data;
+  *(volatile unsigned short*)(dma_buf + port) = data;
 }
 
 void myouti(unsigned int data, unsigned short int port) {
-  *(volatile unsigned int*)(dma_buf+port) = data;
+  *(volatile unsigned int*)(dma_buf + port) = data;
 }
 
 unsigned char myinc(unsigned short int port) {
-  return *(volatile unsigned char*)(dma_buf+port);
+  return *(volatile unsigned char*)(dma_buf + port);
 }
 
 unsigned short myins(unsigned short int port) {
-  return *(volatile unsigned short*)(dma_buf+port);
+  return *(volatile unsigned short*)(dma_buf + port);
 }
 
 unsigned int myini(unsigned short int port) {
-  return *(volatile unsigned int*)(dma_buf+port);
+  return *(volatile unsigned int*)(dma_buf + port);
 }
 
 // Driver implementation of file_operations 
@@ -103,7 +109,25 @@ static int __init init_modules(void) {
   
 	printk("%s:%s():...............Start...............\n", PREFIX_TITLE, __func__);
 
+  int ret = 0;
+
 	/* Register chrdev */ 
+  ret = alloc_chrdev_region(&dev_no, 0, 1, "primeDev");
+  if (ret < 0) {
+    printk(KERN_INFO "Major number allocation failed\n");
+    return ret;
+  }
+  printk(KERN_INFO "Register primeDev(%d, %d)\n", MAJOR(dev_no), MINOR(dev_no));
+  
+  cdev_init(&prime_dev, &fops);
+
+  ret = cdev_add(&prime_dev, dev_no, 1);
+  if (ret != 0) {
+    printk(KERN_INFO "Unable to add Cdev\n");
+    return ret;
+  }
+  printk(KERN_INFO "Added primeDev\n");
+
 
 	/* Init cdev and make it alive */
 
@@ -119,7 +143,9 @@ static void __exit exit_modules(void) {
 	/* Free DMA buffer when exit modules */
 
 	/* Delete character device */
+  cdev_del(&prime_dev);
 
+  unregister_chrdev_region(dev_no, 1);
 	/* Free work routine */
 
 
