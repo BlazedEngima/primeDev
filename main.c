@@ -114,24 +114,30 @@ static int __init init_modules(void) {
 	/* Register chrdev */ 
   ret = alloc_chrdev_region(&dev_no, 0, 1, "primeDev");
   if (ret < 0) {
-    printk(KERN_INFO "Major number allocation failed\n");
+    printk(KERN_INFO "%s:%s(): Major number allocation failed\n", PREFIX_TITLE, __func__);
     return ret;
   }
-  printk(KERN_INFO "Register primeDev(%d, %d)\n", MAJOR(dev_no), MINOR(dev_no));
+  printk(KERN_INFO "%s:%s(): Register primeDev(%d, %d)\n",PREFIX_TITLE, __func__, MAJOR(dev_no), MINOR(dev_no));
   
   cdev_init(&prime_dev, &fops);
 
-  ret = cdev_add(&prime_dev, dev_no, 1);
-  if (ret != 0) {
-    printk(KERN_INFO "Unable to add primeDev\n");
-    return ret;
-  }
-  printk(KERN_INFO "Added primeDev\n");
-
-
 	/* Init cdev and make it alive */
 
+  ret = cdev_add(&prime_dev, dev_no, 1);
+  if (ret) {
+    printk(KERN_INFO "%s:%s(): Unable to add primeDev\n", PREFIX_TITLE, __func__);
+    return ret;
+  }
+  printk(KERN_INFO "%s:%s(): Added primeDev\n", PREFIX_TITLE, __func__);
+
 	/* Allocate DMA buffer */
+
+  dma_buf = kmalloc(DMA_BUFSIZE, GFP_KERNEL);
+  if (!dma_buf) {
+    printk(KERN_INFO "%s:%s(): Unable to allocate DMA Buffer via kmalloc\n", PREFIX_TITLE, __func__);
+    return dma_buf;
+  }
+  printk(KERN_INFO "%s:%s(): Allocated %zu bytes of memory\n", PREFIX_TITLE, __func__, ksize(dma_buf));
 
 	/* Allocate work routine */
 
@@ -142,10 +148,13 @@ static void __exit exit_modules(void) {
 
 	/* Free DMA buffer when exit modules */
 
+  kfree(dma_buf);
+
 	/* Delete character device */
   cdev_del(&prime_dev);
 
   unregister_chrdev_region(dev_no, 1);
+
 	/* Free work routine */
 
 
