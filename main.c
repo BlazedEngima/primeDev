@@ -96,12 +96,51 @@ static ssize_t drv_write(struct file *filp, const char __user *buffer, size_t ss
 
 static long drv_ioctl(struct file *filp, unsigned int cmd, unsigned long arg) {
 	/* Implement ioctl setting for your device */
+  switch (cmd) {
+    case HW5_IOCSETSTUID:
+      myouti(1, DMASTUIDADDR);
+      printk("%s:%s(): Student ID: 119010545\n", PREFIX_TITLE, __func__);
+      break;
+
+    case HW5_IOCSETRWOK:
+      myouti(1, DMARWOKADDR);
+      printk("%s:%s(): RW functions complete\n", PREFIX_TITLE, __func__);
+      break;
+
+    case HW5_IOCSETIOCOK:
+      myouti(1, DMAIOCOKADDR);
+      printk("%s:%s(): IOCTL function complete\n", PREFIX_TITLE, __func__);
+      break;
+
+    case HW5_IOCSETIRQOK:
+      myouti(1, DMAIRQOKADDR);
+      printk("%s:%s(): IRQ function complete\n", PREFIX_TITLE, __func__);
+      break;
+    
+    case HW5_IOCSETBLOCK:
+      if (myini(DMABLOCKADDR) == 0)
+        myouti(1, DMABLOCKADDR);
+        
+      else if (myini(DMABLOCKADDR == 1))
+        myouti(0, DMABLOCKADDR);
+        
+      else 
+        return -EFAULT;
+
+      break;
+
+    case HW5_IOCWAITREADABLE:
+      myouti(1, DMAREADABLEADDR);
+      printk("%s:%s(): Set wait readable to 1\n", PREFIX_TITLE, __func__);
+  }
+
 	return 0;
 }
 
 // Standard arithmetic routine
 static void drv_arithmetic_routine(struct work_struct* ws) {
 	/* Implement arthemetic routine */
+  
 }
 
 // Init and exit modules
@@ -135,11 +174,13 @@ static int __init init_modules(void) {
   dma_buf = kmalloc(DMA_BUFSIZE, GFP_KERNEL);
   if (!dma_buf) {
     printk(KERN_INFO "%s:%s(): Unable to allocate DMA Buffer via kmalloc\n", PREFIX_TITLE, __func__);
-    return dma_buf;
+    return -EFAULT;
   }
+  myouti(0, DMABLOCKADDR);
   printk(KERN_INFO "%s:%s(): Allocated %zu bytes of memory\n", PREFIX_TITLE, __func__, ksize(dma_buf));
 
 	/* Allocate work routine */
+  //INIT_WORK(work_routine, drv_arithmetic_routine);
 
 	return 0;
 }
