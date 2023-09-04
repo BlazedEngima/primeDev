@@ -73,14 +73,14 @@ unsigned int myini(unsigned short int port) {
 static int drv_open(struct inode* ii, struct file* ff) {
 	try_module_get(THIS_MODULE);
 
-  printk("%s:%s(): device open\n", PREFIX_TITLE, __func__);
+  printk(KERN_INFO "%s:%s(): device open\n", PREFIX_TITLE, __func__);
 	return 0;
 }
 
 static int drv_release(struct inode* ii, struct file* ff) {
 	module_put(THIS_MODULE);
   
-  printk("%s:%s(): device close\n", PREFIX_TITLE, __func__);
+  printk(KERN_INFO "%s:%s(): device close\n", PREFIX_TITLE, __func__);
 	return 0;
 }
 
@@ -99,22 +99,22 @@ static long drv_ioctl(struct file *filp, unsigned int cmd, unsigned long arg) {
   switch (cmd) {
     case HW5_IOCSETSTUID:
       myouti(1, DMASTUIDADDR);
-      printk("%s:%s(): Student ID: 119010545\n", PREFIX_TITLE, __func__);
+      printk(KERN_INFO "%s:%s(): Student ID: 119010545\n", PREFIX_TITLE, __func__);
       break;
 
     case HW5_IOCSETRWOK:
       myouti(1, DMARWOKADDR);
-      printk("%s:%s(): RW functions complete\n", PREFIX_TITLE, __func__);
+      printk(KERN_INFO "%s:%s(): RW functions complete\n", PREFIX_TITLE, __func__);
       break;
 
     case HW5_IOCSETIOCOK:
       myouti(1, DMAIOCOKADDR);
-      printk("%s:%s(): IOCTL function complete\n", PREFIX_TITLE, __func__);
+      printk(KERN_INFO "%s:%s(): IOCTL function complete\n", PREFIX_TITLE, __func__);
       break;
 
     case HW5_IOCSETIRQOK:
       myouti(1, DMAIRQOKADDR);
-      printk("%s:%s(): IRQ function complete\n", PREFIX_TITLE, __func__);
+      printk(KERN_INFO "%s:%s(): IRQ function complete\n", PREFIX_TITLE, __func__);
       break;
     
     case HW5_IOCSETBLOCK:
@@ -131,7 +131,8 @@ static long drv_ioctl(struct file *filp, unsigned int cmd, unsigned long arg) {
 
     case HW5_IOCWAITREADABLE:
       myouti(1, DMAREADABLEADDR);
-      printk("%s:%s(): Set wait readable to 1\n", PREFIX_TITLE, __func__);
+      printk(KERN_INFO "%s:%s(): Set wait readable to 1\n", PREFIX_TITLE, __func__);
+      break;
   }
 
 	return 0;
@@ -146,14 +147,14 @@ static void drv_arithmetic_routine(struct work_struct* ws) {
 // Init and exit modules
 static int __init init_modules(void) {
   
-	printk("%s:%s():...............Start...............\n", PREFIX_TITLE, __func__);
-
   int ret = 0;
+
+	printk(KERN_INFO "%s:%s():...............Start...............\n", PREFIX_TITLE, __func__);
 
 	/* Register chrdev */ 
   ret = alloc_chrdev_region(&dev_no, 0, 1, "primeDev");
   if (ret < 0) {
-    printk(KERN_INFO "%s:%s(): Major number allocation failed\n", PREFIX_TITLE, __func__);
+    printk(KERN_ALERT "%s:%s(): Major number allocation failed\n", PREFIX_TITLE, __func__);
     return ret;
   }
   printk(KERN_INFO "%s:%s(): Register primeDev(%d, %d)\n",PREFIX_TITLE, __func__, MAJOR(dev_no), MINOR(dev_no));
@@ -164,7 +165,7 @@ static int __init init_modules(void) {
 
   ret = cdev_add(&prime_dev, dev_no, 1);
   if (ret) {
-    printk(KERN_INFO "%s:%s(): Unable to add primeDev\n", PREFIX_TITLE, __func__);
+    printk(KERN_ALERT "%s:%s(): Unable to add primeDev\n", PREFIX_TITLE, __func__);
     return ret;
   }
   printk(KERN_INFO "%s:%s(): Added primeDev\n", PREFIX_TITLE, __func__);
@@ -173,33 +174,36 @@ static int __init init_modules(void) {
 
   dma_buf = kmalloc(DMA_BUFSIZE, GFP_KERNEL);
   if (!dma_buf) {
-    printk(KERN_INFO "%s:%s(): Unable to allocate DMA Buffer via kmalloc\n", PREFIX_TITLE, __func__);
+    printk(KERN_ALERT "%s:%s(): Unable to allocate DMA Buffer via kmalloc\n", PREFIX_TITLE, __func__);
     return -EFAULT;
   }
   myouti(0, DMABLOCKADDR);
   printk(KERN_INFO "%s:%s(): Allocated %zu bytes of memory\n", PREFIX_TITLE, __func__, ksize(dma_buf));
 
 	/* Allocate work routine */
-  //INIT_WORK(work_routine, drv_arithmetic_routine);
-
+  work_routine = kmalloc(sizeof(struct work_struct), GFP_KERNEL);
+  if (!work_routine) {
+    printk(KERN_ALERT "%s:%s(): Unable to allocate work routine via kmalloc\n", PREFIX_TITLE, __func__);
+    return -EFAULT;
+  }
+  printk(KERN_INFO "%s:%s(): Allocated %zu bytes of memory\n", PREFIX_TITLE, __func__, ksize(work_routine));
+  
 	return 0;
 }
 
 static void __exit exit_modules(void) {
 
 	/* Free DMA buffer when exit modules */
-
   kfree(dma_buf);
 
 	/* Delete character device */
   cdev_del(&prime_dev);
-
   unregister_chrdev_region(dev_no, 1);
 
 	/* Free work routine */
+  kfree(work_routine);
 
-
-	printk("%s:%s():..............End..............\n", PREFIX_TITLE, __func__);
+	printk(KERN_INFO "%s:%s():..............End..............\n", PREFIX_TITLE, __func__);
 }
 
 module_init(init_modules);
