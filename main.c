@@ -91,7 +91,7 @@ static ssize_t drv_read(struct file *filp, char __user *buffer, size_t ss, loff_
   if (copy_to_user(buffer, (dma_buf + DMAANSADDR), ss)) {
     return -EFAULT;
   }
-  printk(KERN_INFO "%s:%s(): Answer = %u\n", PREFIX_TITLE, __func__);
+  printk(KERN_INFO "%s:%s(): Answer = %u\n", PREFIX_TITLE, __func__, myini(DMAANSADDR));
 
 	return 0;
 }
@@ -158,15 +158,26 @@ static long drv_ioctl(struct file *filp, unsigned int cmd, unsigned long arg) {
         printk(KERN_INFO "%s:%s(): Set Non-Blocking IO\n", PREFIX_TITLE, __func__);
       }
 
-      else 
+      else {
+        printk(KERN_ALERT "%s:%s(): Error Setting Blocking/Non-Blocking IO", PREFIX_TITLE, __func__);
         return -EFAULT;
+      }
 
       break;
 
-    case HW5_IOCWAITREADABLE:
+    case HW5_IOCWAITREADABLE: {
+      int readable = 1; 
+
       myouti(1, DMAREADABLEADDR);
       printk(KERN_INFO "%s:%s(): Set wait readable to 1\n", PREFIX_TITLE, __func__);
+
+      flush_scheduled_work();
+      if (copy_to_user((int *) arg, &readable, sizeof(int))) {
+        return -EFAULT;
+      }
+
       break;
+    }
   }
 
 	return 0;
