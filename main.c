@@ -116,7 +116,7 @@ static ssize_t drv_write(struct file *filp, const char __user *buffer, size_t ss
     return 1;
   }
 
-  if (!myini(DMABLOCKADDR)) {
+  if (myini(DMABLOCKADDR)) {
     printk(KERN_INFO "%s:%s(): Blocking\n", PREFIX_TITLE, __func__);
     flush_scheduled_work();
   }
