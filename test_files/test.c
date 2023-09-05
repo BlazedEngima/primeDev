@@ -148,12 +148,12 @@ int main(void) {
     return -1;
   }
 
-  //arithmetic(fd, '+', 100, 10);
-  //arithmetic(fd, '-', 100, 10);
-  //arithmetic(fd, '*', 100, 10);
-  //arithmetic(fd, '/', 100, 10);
+  arithmetic(fd, '+', 100, 10);
+  arithmetic(fd, '-', 100, 10);
+  arithmetic(fd, '*', 100, 10);
+  arithmetic(fd, '/', 100, 10);
   arithmetic(fd, 'p', 100, 10000);
-  //arithmetic(fd, 'p', 100, 20000);
+  arithmetic(fd, 'p', 100, 20000);
 
 
   printf("...............End...............\n");
