@@ -185,20 +185,14 @@ static long drv_ioctl(struct file *filp, unsigned int cmd, unsigned long arg) {
 
 static unsigned int prime(int base, short nth) {
   int ans = base;
-  int num = 0, isPrime;
+  int i, num = 0, isPrime;
 
   while(num != nth) {
     isPrime = 1;
     ans++;
-   
-    // Corner Cases
-    if (ans <= 1) isPrime = 0;
-    else if (ans == 2 || ans == 3) isPrime = 1;
-    else if (ans % 2 == 0 || ans % 3 == 0) isPrime = 0;
 
-    // Prime numbers can be represented in the form of (6*k + 1) or (6*k - 1)
-    for (int i = 5; i * i <= ans; i = i + 6) {
-      if (ans % i == 0 || ans % (i + 2) == 0) {
+    for(i = 2; i <= ans / 2; i++) {
+      if (ans % i == 0) {
         isPrime = 0;
         break;
       }
@@ -206,7 +200,7 @@ static unsigned int prime(int base, short nth) {
 
     if (isPrime) num++;
   }
-
+ 
   return ans;
 }
 
