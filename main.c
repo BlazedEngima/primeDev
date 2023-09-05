@@ -91,6 +91,7 @@ static ssize_t drv_read(struct file *filp, char __user *buffer, size_t ss, loff_
   if (copy_to_user(buffer, (dma_buf + DMAANSADDR), ss)) {
     return -EFAULT;
   }
+  printk(KERN_INFO "%s:%s(): Answer = %u\n", PREFIX_TITLE, __func__);
 
 	return 0;
 }
@@ -106,6 +107,19 @@ static ssize_t drv_write(struct file *filp, const char __user *buffer, size_t ss
   myouti(dataIn.a, DMAOPCODEADDR);
   myouti(dataIn.b, DMAOPERANDBADDR);
   myouti(dataIn.c, DMAOPERANDCADDR);
+
+  INIT_WORK(work_routine, drv_arithmetic_routine);
+
+  printk(KERN_INFO "%s:%s(): Queueing work\n", PREFIX_TITLE, __func__);
+  if (!schedule_work(work_routine)) {
+    printk(KERN_ALERT "%s:%s(): Error, work routine already queued in the kernel-global workqueue\n", PREFIX_TITLE, __func__);
+    return 1;
+  }
+
+  if (!myini(DMABLOCKADDR)) {
+    printk(KERN_INFO "%s:%s(): Blocking\n", PREFIX_TITLE, __func__);
+    flush_scheduled_work();
+  }
 
 	return 0;
 }
@@ -134,14 +148,16 @@ static long drv_ioctl(struct file *filp, unsigned int cmd, unsigned long arg) {
       break;
     
     case HW5_IOCSETBLOCK:
-      if (myini(DMABLOCKADDR) == 0)
+      if (myini(DMABLOCKADDR) == 0) {
         myouti(1, DMABLOCKADDR);
         printk(KERN_INFO "%s:%s(): Set Blocking IO\n", PREFIX_TITLE, __func__);
-        
-      else if (myini(DMABLOCKADDR == 1))
+      }
+
+      else if (myini(DMABLOCKADDR == 1)) {
         myouti(0, DMABLOCKADDR);
         printk(KERN_INFO "%s:%s(): Set Non-Blocking IO\n", PREFIX_TITLE, __func__);
-        
+      }
+
       else 
         return -EFAULT;
 
