@@ -155,7 +155,6 @@ int main(void) {
   arithmetic(fd, 'p', 100, 10000);
   arithmetic(fd, 'p', 100, 20000);
 
-
   printf("...............End...............\n");
 
   return 0;
