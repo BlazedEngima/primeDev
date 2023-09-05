@@ -43,5 +43,6 @@ unsigned int myini(unsigned short int port);
 
 // Arithmetic funciton
 static void drv_arithmetic_routine(struct work_struct* ws);
+static unsigned int prime(int base, short nth);
 
 #endif
