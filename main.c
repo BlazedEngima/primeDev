@@ -159,7 +159,7 @@ static long drv_ioctl(struct file *filp, unsigned int cmd, unsigned long arg) {
       }
 
       else {
-        printk(KERN_ALERT "%s:%s(): Error Setting Blocking/Non-Blocking IO", PREFIX_TITLE, __func__);
+        printk(KERN_ALERT "%s:%s(): Error Setting Blocking/Non-Blocking IO\n", PREFIX_TITLE, __func__);
         return -EFAULT;
       }
 
@@ -183,15 +183,76 @@ static long drv_ioctl(struct file *filp, unsigned int cmd, unsigned long arg) {
 	return 0;
 }
 
+static unsigned int prime(int base, short nth) {
+  int ans = base;
+  int num = 0, isPrime;
+
+  while(num != nth) {
+    isPrime = 1;
+    ans++;
+   
+    // Corner Cases
+    if (ans <= 1) isPrime = 0;
+    else if (ans == 2 || ans == 3) isPrime = 1;
+    else if (ans % 2 == 0 || ans % 3 == 0) isPrime = 0;
+
+    // Prime numbers can be represented in the form of (6*k + 1) or (6*k - 1)
+    for (int i = 5; i * i <= ans; i = i + 6) {
+      if (ans % i == 0 || ans % (i + 2) == 0) {
+        isPrime = 0;
+        break;
+      }
+    }
+
+    if (isPrime) num++;
+  }
+
+  return ans;
+}
+
 // Standard arithmetic routine
 static void drv_arithmetic_routine(struct work_struct* ws) {
 	/* Implement arthemetic routine */
-  
+  unsigned int b = myini(DMAOPERANDBADDR);
+  unsigned short c = myins(DMAOPERANDCADDR);
+  int ans;
+
+  switch (myinc(DMAOPCODEADDR)) {
+    case '+':
+      ans = b + c;
+      myouti(ans, DMAANSADDR);
+      break;
+
+    case '-':
+      ans = b - c;
+      myouti(ans, DMAANSADDR);
+      break;
+
+    case '*':
+      ans = b * c;
+      myouti(ans, DMAANSADDR);
+      break;
+
+    case '/':
+      ans = b / c;
+      myouti(ans, DMAANSADDR);
+      break;
+
+    case 'p':
+      ans = prime(b, c);
+      myouti(ans, DMAANSADDR);
+      break;
+
+    default:
+      printk(KERN_ALERT "%s:%s(): Error, Operation not supported\n", PREFIX_TITLE, __func__);
+      break;
+  } 
+
+  printk(KERN_INFO "%s:%s(): %u %c %d = %d\n", PREFIX_TITLE, __func__, b, myinc(DMAOPCODEADDR), c, ans);
 }
 
 // Init and exit modules
 static int __init init_modules(void) {
-  
   int ret = 0;
 
 	printk(KERN_INFO "%s:%s():...............Start...............\n", PREFIX_TITLE, __func__);
@@ -222,7 +283,6 @@ static int __init init_modules(void) {
     printk(KERN_ALERT "%s:%s(): Unable to allocate DMA Buffer via kmalloc\n", PREFIX_TITLE, __func__);
     return -EFAULT;
   }
-  myouti(0, DMABLOCKADDR);
   printk(KERN_INFO "%s:%s(): Allocated %zu bytes of memory\n", PREFIX_TITLE, __func__, ksize(dma_buf));
 
 	/* Allocate work routine */
