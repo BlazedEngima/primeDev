@@ -86,11 +86,18 @@ static int drv_release(struct inode* ii, struct file* ff) {
 
 static ssize_t drv_read(struct file *filp, char __user *buffer, size_t ss, loff_t* lo) {
 	/* Implement read operation for your device */
+
+  if (copy_to_user(buffer, (dma_buf + DMAANSADDR), sizeof(int))) {
+    return -EFAULT;
+  }
+
 	return 0;
 }
 
 static ssize_t drv_write(struct file *filp, const char __user *buffer, size_t ss, loff_t* lo) {
 	/* Implement write operation for your device */
+
+
 	return 0;
 }
 
