@@ -26,6 +26,9 @@
 #define DMAOPERANDBADDR 0x21    // data.b operand1
 #define DMAOPERANDCADDR 0x25    // data.c operand2
 
+// Interrupt Number
+#define IRQ_NUM 1
+
 // Declaration for file operations
 static ssize_t drv_read(struct file *filp, char __user *buffer, size_t, loff_t*);
 static int drv_open(struct inode*, struct file*);
@@ -44,5 +47,8 @@ unsigned int myini(unsigned short int port);
 // Arithmetic funciton
 static void drv_arithmetic_routine(struct work_struct* ws);
 static unsigned int prime(int base, short nth);
+
+// Interrupt function
+static irqreturn_t interrupt_handler(int irq, void *data);
 
 #endif

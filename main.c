@@ -44,6 +44,8 @@ struct DataIn {
   short c;
 };
 
+static unsigned int no_interrupt = 0;
+
 // Input and output data from/to DMA
 void myoutc(unsigned char data, unsigned short int port) {
   *(volatile unsigned char*)(dma_buf + port) = data;
@@ -245,6 +247,13 @@ static void drv_arithmetic_routine(struct work_struct* ws) {
   printk(KERN_INFO "%s:%s(): %u %c %d = %d\n", PREFIX_TITLE, __func__, b, myinc(DMAOPCODEADDR), c, ans);
 }
 
+// Interrupt routine
+static irqreturn_t interrupt_handler(int irq, void *data) {
+  /* Implement interrupt routine */
+  no_interrupt++;
+  return IRQ_HANDLED;
+}
+
 // Init and exit modules
 static int __init init_modules(void) {
   int ret = 0;
@@ -284,20 +293,32 @@ static int __init init_modules(void) {
     return -EFAULT;
   }
   printk(KERN_INFO "%s:%s(): Allocated %zu bytes of memory\n", PREFIX_TITLE, __func__, ksize(work_routine));
-  
+
+  /* Install ISR */
+  ret = request_irq(IRQ_NUM, interrupt_handler, IRQF_SHARED, "interrupt", &no_interrupt);
+  if (ret) {
+    printk(KERN_ALERT "%s:%s(): Failed to request for IRQ\n", PREFIX_TITLE, __func__);
+    return -1;
+  }
+  printk(KERN_INFO "%s:%s(): Installed interrupt request handler\n", PREFIX_TITLE, __func__);
+
 	return 0;
 }
 
 static void __exit exit_modules(void) {
 
+  /* Free interrupt handler */
+  free_irq(IRQ_NUM, &no_interrupt);
+  printk(KERN_INFO "%s:%s(): Interrupt count = %u\n", PREFIX_TITLE, __func__, no_interrupt);
+
 	/* Free DMA buffer when exit modules */
   kfree(dma_buf);
-  printk(KERN_INFO "%s:%s(): Freed DMA buffer", PREFIX_TITLE, __func__);
+  printk(KERN_INFO "%s:%s(): Freed DMA buffer\n", PREFIX_TITLE, __func__);
 
 	/* Delete character device */
   cdev_del(&prime_dev);
   unregister_chrdev_region(dev_no, 1);
-  printk(KERN_INFO "%s:%s(): Unregistered chrdev", PREFIX_TITLE, __func__);
+  printk(KERN_INFO "%s:%s(): Unregistered chrdev\n", PREFIX_TITLE, __func__);
 
 	/* Free work routine */
   kfree(work_routine);
