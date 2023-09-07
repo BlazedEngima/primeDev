@@ -44,6 +44,7 @@ struct DataIn {
   short c;
 };
 
+// Number of interrupts
 static unsigned int no_interrupt = 0;
 
 // Input and output data from/to DMA
