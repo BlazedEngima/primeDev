@@ -262,7 +262,6 @@ static int __init init_modules(void) {
   cdev_init(&prime_dev, &fops);
 
 	/* Init cdev and make it alive */
-
   ret = cdev_add(&prime_dev, dev_no, 1);
   if (ret) {
     printk(KERN_ALERT "%s:%s(): Unable to add primeDev\n", PREFIX_TITLE, __func__);
@@ -271,7 +270,6 @@ static int __init init_modules(void) {
   printk(KERN_INFO "%s:%s(): Added primeDev\n", PREFIX_TITLE, __func__);
 
 	/* Allocate DMA buffer */
-
   dma_buf = kmalloc(DMA_BUFSIZE, GFP_KERNEL);
   if (!dma_buf) {
     printk(KERN_ALERT "%s:%s(): Unable to allocate DMA Buffer via kmalloc\n", PREFIX_TITLE, __func__);
@@ -294,10 +292,12 @@ static void __exit exit_modules(void) {
 
 	/* Free DMA buffer when exit modules */
   kfree(dma_buf);
+  printk(KERN_INFO "%s:%s(): Freed DMA buffer", PREFIX_TITLE, __func__);
 
 	/* Delete character device */
   cdev_del(&prime_dev);
   unregister_chrdev_region(dev_no, 1);
+  printk(KERN_INFO "%s:%s(): Unregistered chrdev", PREFIX_TITLE, __func__);
 
 	/* Free work routine */
   kfree(work_routine);
