@@ -44,7 +44,12 @@ if (ioctl(fd, HW5_IOCSETBLOCK, &ret) < 0 ) {
     ...
 }
 ```
-The arithmetic operations available are the four basic arithmetic operations and finding the n-th prime number ('+', '-', '*', '/', 'p').
+The arithmetic operations available are the four basic arithmetic operations and finding the n-th prime number.
+- `+` 
+- `-`
+- `*`
+- `/`
+- `p`
 
 Sample usage:
 ```
@@ -56,7 +61,7 @@ data.c = 10;
 write(fd, &data, sizeof(data));
 read(fd, &return_val, sizeof(int));
 ```
-> **_NOTE:_** data refers to a variable of the previously mention DataIn struct. Populate the data members before writing to the device driver
+> **_NOTE:_** Data refers to a variable of the previously mention DataIn struct. Populate the data members before writing to the device driver
 
 There is a sample test file (that is used for testing) to outline the usage better, please refer to it if you require an example.
 
