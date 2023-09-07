@@ -2,8 +2,11 @@
 A virtual device that can find the n-th prime number or perform the basic 4 arithemtic operations
 
 The project involves creating a device file and mapping driver functions to that file.
-The device have blocking/non-blocking IO features controlled by the ioctl function.
+
+The device has blocking/non-blocking IO features controlled by the ioctl function.
+
 It simulate registers on the device by allocating a DMA buffer.
+
 The device driver will also count the number of interrupts of an input device (like a keyboard)
 
 ## The design of the Program
@@ -15,7 +18,7 @@ The ioctl function sets flags available in the DMA memory (acting as registers) 
 
 The driver will defer the arithmetic calculations to a seperate kernel thread via a workqueue.
 
-The data is passed to the driver as a struct that contains the operands and the operator
+Data is passed to the driver as a struct that contains the operands and the operator
 ```
 struct DataIn {
     char a;
@@ -37,13 +40,19 @@ The ioctl functions are as given:
 Sample usage:
 ```
 if (ioctl(fd, HW5_IOCSETBLOCK, &ret) < 0 ) {
+    ERROR
     ...
 }
 ```
-The arithmetic operations available are the four basic arithmetic operations and finding the n-th prime number.
+The arithmetic operations available are the four basic arithmetic operations and finding the n-th prime number ('+', '-', '*', '/', 'p').
 
 Sample usage:
 ```
+struct DataIn data;
+data.a = 'p';
+data.b = 5;
+data.c = 10;
+
 write(fd, &data, sizeof(data));
 read(fd, &return_val, sizeof(int));
 ```
